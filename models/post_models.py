@@ -7,7 +7,11 @@ class CreatePostRequest(BaseModel):
     """
     title: str = Field(..., description="Post title")
     body: str = Field(..., description="Post body")
-    userId: int = Field(1, description="ID user, default 1")
+    user_id: int = Field(1, alias="userId", description="ID user, default 1")
+
+    model_config = ConfigDict(
+        populate_by_name=True,
+    )
 
     def to_dict(self):
         return self.model_dump()
@@ -20,9 +24,10 @@ class PostModel(BaseModel):
     id: int = Field(..., description="Post ID")
     title: str = Field(..., description="Post title")
     body: str = Field(..., description="Post body")
-    userId: int = Field(..., description="User ID (who created post)")
+    user_id: int = Field(..., alias="userId", description="User ID (who created post)")
 
     model_config = ConfigDict(
         from_attributes=True,
-        extra='ignore'
+        extra='ignore',
+        populate_by_name=True,
     )

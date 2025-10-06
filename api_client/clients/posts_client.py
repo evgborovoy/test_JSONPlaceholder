@@ -18,23 +18,23 @@ class PostsClient:
         path = f"{self.ENDPOINT}/{post_id}"
         return self.client.get(path)
 
-    def create_post(self, title: str, body: str, userId: int = 1) -> requests.Response:
+    def create_post(self, title: str, body: str, user_id: int = 1) -> requests.Response:
         """POST /posts"""
-        post_data = CreatePostRequest(title=title, body=body, userId=userId)
+        post_data = CreatePostRequest(title=title, body=body, user_id=user_id)
 
         return self.client.post(
             path=self.ENDPOINT,
             json=post_data.to_dict()
         )
 
-    def update_post(self, post_id: int, title: str, body: str, userId: int) -> requests.Response:
+    def update_post(self, post_id: int, title: str, body: str, user_id: int) -> requests.Response:
         """PUT /posts/{id}"""
         path = f"{self.ENDPOINT}/{post_id}"
         update_data = {
             "id": post_id,  # JSONPlaceholder required ID in body
             "title": title,
             "body": body,
-            "userId": userId
+            "userId": user_id
         }
         return self.client.put(path, json=update_data)
 
