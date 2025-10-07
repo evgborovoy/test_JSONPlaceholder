@@ -48,3 +48,8 @@ class PostsClient:
         path = f"{self.ENDPOINT}"
         params = {"userId": user_id}
         return self.client.get(path, params=params)
+
+    def get_comments_by_post_id(self, post_id: int) -> requests.Response:
+        """GET /posts/{id}/comments"""
+        path = f"{self.ENDPOINT}/{post_id}/comments"
+        return self.client.get(path)
