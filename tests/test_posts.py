@@ -2,6 +2,8 @@ import allure
 import json
 import pytest
 from datetime import datetime
+
+from models.comment_models import CommentModel
 from models.post_models import PostModel
 
 MAX_RESPONSE_TIME = 2.0  # In seconds
@@ -187,3 +189,34 @@ class TestPosts:
             if response_data:
                 first_post = PostModel.model_validate(response_data[0])
                 assert first_post.user_id == user_id, "Response user ID does not match the requested"
+
+    @allure.story("GET /posts/{id}/comments - Get Nested Comments")
+    @allure.title("Check receiving and validate nested comments")
+    @pytest.mark.parametrize("post_id, min_expected_comments", [(1, 5)])
+    def test_get_nested_comments(self, posts_client, post_id, min_expected_comments):
+        with allure.step(f"GET request for receiving comments of post ID: {post_id}"):
+            response = posts_client.get_comments_by_post_id(post_id)
+
+        with allure.step("Check HTTP status code"):
+            assert response.status_code == 200, f"Expect 200, actual {response.status_code}"
+
+        response_data = response.json()
+
+        with allure.step("Check receive comments list and its size"):
+            assert isinstance(response_data, list), "Answer should be a list of comments"
+            assert len(
+                response_data) >= min_expected_comments, f"Expect minimum {min_expected_comments} comments, actual {len(response_data)}"
+
+        with allure.step("Validate schema for comment"):
+            if response_data:
+                first_comment = CommentModel.model_validate(response_data[0])
+
+                assert first_comment.post_id == post_id, f"'post_id' in comment ({first_comment.post_id}) dont match requested ({post_id})"
+                assert 'email' in first_comment.model_dump(
+                    by_alias=False), "'email' field should be available in snake_case"
+
+        allure.attach(
+            json.dumps(response_data[0], indent=2, ensure_ascii=False),
+            name="Validated Comment Schema",
+            attachment_type=allure.attachment_type.JSON
+        )
