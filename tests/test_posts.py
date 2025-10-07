@@ -4,6 +4,8 @@ import pytest
 from datetime import datetime
 from models.post_models import PostModel
 
+MAX_RESPONSE_TIME = 2.0  # In seconds
+
 
 @allure.epic("API regression testing")
 @allure.feature("Posts CRUD operations")
@@ -154,3 +156,34 @@ class TestPosts:
             else:
                 # In real project:
                 assert response.status_code == expected_status, f"Expect {expected_status}, actual {response.status_code}"
+
+    @allure.story("GET /posts?userId={id} - Performance Check")
+    @allure.title("Check receiving posts by userId and validate response time")
+    @pytest.mark.parametrize("user_id, expected_count", [(1, 10)])
+    def test_performance_get_posts_by_user_id(self, posts_client, user_id, expected_count):
+        with allure.step(f"GET request for user_id={user_id}"):
+            response = posts_client.get_posts_by_user_id(user_id)
+
+        response_time = response.elapsed.total_seconds()
+
+        with allure.step("Check HTTP satus code"):
+            assert response.status_code == 200, f"Expect 200, actual {response.status_code}"
+
+        response_data = response.json()
+
+        with allure.step(f"Validate response time (Max: {MAX_RESPONSE_TIME:.2f}s)"):
+            allure.attach(
+                f"Response Time: {response_time:.3f}s",
+                name="Performance Metric",
+                attachment_type=allure.attachment_type.TEXT
+            )
+            assert response_time < MAX_RESPONSE_TIME, f"Response time: {response_time:.3f}s is over limit: {MAX_RESPONSE_TIME:.2f}s"
+
+        with allure.step(f"Check amount and schema of posts"):
+            assert isinstance(response_data, list)
+            # JSONPlaceholder always return 10 posts for user
+            assert len(response_data) == expected_count, f"Expect {expected_count} posta, actual {len(response_data)}"
+
+            if response_data:
+                first_post = PostModel.model_validate(response_data[0])
+                assert first_post.user_id == user_id, "Response user ID does not match the requested"

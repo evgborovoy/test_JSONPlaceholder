@@ -42,3 +42,9 @@ class PostsClient:
         """DELETE /posts/{id}"""
         path = f"{self.ENDPOINT}/{post_id}"
         return self.client.delete(path)
+
+    def get_posts_by_user_id(self, user_id: int) -> requests.Response:
+        """GET /posts?userId={id}"""
+        path = f"{self.ENDPOINT}"
+        params = {"userId": user_id}
+        return self.client.get(path, params=params)
