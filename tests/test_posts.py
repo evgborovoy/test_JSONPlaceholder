@@ -246,3 +246,27 @@ class TestPosts:
             with allure.step("Check empty response body"):
                 # if status code is 404, response body should be empty
                 assert not response.text or response.json() == {}, "Response body should be empty"
+
+    @allure.story("GET /posts - Complex Filtering")
+    @allure.title("Check filtration by parameters (userId и title)")
+    def test_complex_filtering(self, posts_client):
+        target_user_id = 1
+        target_title = "qui est esse"
+
+        with allure.step(f"Send GET request with filter: userId={target_user_id} и title={target_title}"):
+            response = posts_client.filter_posts(userId=target_user_id, title=target_title)
+
+        with allure.step("Check HTTP status code"):
+            assert response.status_code == 200, f"Expect 200, actual {response.status_code}"
+
+        response_data = response.json()
+
+        with allure.step("Checking that exactly one result was obtained"):
+            assert isinstance(response_data, list)
+            assert len(response_data) == 1, f"Expect 1 post, actual {len(response_data)}"
+
+        with allure.step("Validate schema and data"):
+            filtered_post = PostModel.model_validate(response_data[0])
+
+            assert filtered_post.user_id == target_user_id
+            assert filtered_post.title == target_title
