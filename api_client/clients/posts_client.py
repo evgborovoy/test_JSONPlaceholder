@@ -53,3 +53,7 @@ class PostsClient:
         """GET /posts/{id}/comments"""
         path = f"{self.ENDPOINT}/{post_id}/comments"
         return self.client.get(path)
+
+    def filter_posts(self, **params) -> requests.Response:
+        """GET /posts"""
+        return self.client.get(self.ENDPOINT, params=params)
