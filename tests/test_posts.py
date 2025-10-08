@@ -220,3 +220,29 @@ class TestPosts:
             name="Validated Comment Schema",
             attachment_type=allure.attachment_type.JSON
         )
+
+    @allure.story("GET /posts/{id} - Boundary Testing")
+    @allure.title("Check boundary ID: first, last and not existing posts")
+    @pytest.mark.parametrize("post_id, expected_status, is_valid", [
+        (1, 200, True),
+        (100, 200, True),
+        (0, 404, False),
+        (101, 404, False),
+    ])
+    def test_get_post_boundary_conditions(self, posts_client, post_id, expected_status, is_valid):
+
+        with allure.step(f"GET request for ID: {post_id}"):
+            response = posts_client.get_post_by_id(post_id)
+
+        with allure.step(f"Check HTTP status code"):
+            assert response.status_code == expected_status, f"ID={post_id}: Expect {expected_status}, actual {response.status_code}"
+
+        if is_valid:
+            with allure.step("Schema validation"):
+                # if status code is 200, check data and ID
+                PostModel.model_validate(response.json())
+                assert response.json().get('id') == post_id
+        else:
+            with allure.step("Check empty response body"):
+                # if status code is 404, response body should be empty
+                assert not response.text or response.json() == {}, "Response body should be empty"
