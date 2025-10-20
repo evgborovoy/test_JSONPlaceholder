@@ -30,17 +30,27 @@ jobs:
         continue-on-error: true
         run: pytest --alluredir=allure-results
 
-      - name: Upload Allure test results (raw data)
-        uses: actions/upload-artifact@v4
-        with:
-          name: allure-results-raw
-          path: allure-results
-
-      - name: Build and Publish Allure Report
-        uses: 'simple-elf/allure-report-action@v1.11'
+      - name: Load test report history
+        uses: actions/checkout@v4
         if: always()
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GH-PAGES: gh-pages
+        continue-on-error: true
         with:
+          ref: gh-pages
+          path: gh-pages
+
+      - name: Build test report
+        uses: simple-elf/allure-report-action@v1.11
+        if: always()
+        with:
+          gh_pages: gh-pages
           allure_results: allure-results
+          keep_reports: 20
+
+      - name: Publish test report
+        uses: peaceiris/actions-gh-pages@v4
+        if: always()
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_branch: gh-pages
+          publish_dir: allure-report
+          force_orphan: true
