@@ -1,4 +1,4 @@
-name: Playwright python tests
+name: Playwright Python Tests
 
 on:
   push:
@@ -35,16 +35,29 @@ jobs:
         continue-on-error: true
         run: pytest --alluredir=allure-results
 
-      - name: Generate and publish Allure report
-        uses: simple-elf/allure-report-action@v1.11
-        if: always()
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          allure_results: allure-results
-          gh_pages: gh-pages
-          allure_history: true
-          keep_reports: 20
+      - name: Check allure-results
+        run: ls -la allure-results
+
+      - name: Generate Allure report
+        run: |
+          pip install allure-pytest
+          allure generate allure-results -o allure-report --clean
+
+      - name: Publish Allure report to gh-pages
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+          git fetch origin gh-pages || true
+          git checkout gh-pages || git checkout --orphan gh-pages
+
+          git rm -rf . || true
+
+          cp -r allure-report/* .
+
+          git add .
+          git commit -m "Update Allure report [skip ci]" || echo "No changes to commit"
+          git push origin gh-pages --force
 
       - name: Upload Allure report as artifact
         if: always()
