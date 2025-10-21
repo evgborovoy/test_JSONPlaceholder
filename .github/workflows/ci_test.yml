@@ -35,7 +35,7 @@ jobs:
         continue-on-error: true
         run: pytest --alluredir=allure-results
 
-      - name: Build and Publish Allure Report (Optimized)
+      - name: Generate and publish Allure report
         uses: simple-elf/allure-report-action@v1.11
         if: always()
         env:
@@ -45,3 +45,19 @@ jobs:
           gh_pages: gh-pages
           allure_history: true
           keep_reports: 20
+
+      - name: Upload Allure report as artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: allure-report
+          path: allure-report
+          retention-days: 10
+
+      - name: Print Allure report link
+        if: always()
+        run: |
+          REPO_NAME=$(echo $GITHUB_REPOSITORY | cut -d'/' -f2)
+          echo "✅ Allure report published!"
+          echo "🌐 Online report: https://${{ github.repository_owner }}.github.io/${REPO_NAME}/"
+          echo "📦 Downloadable report available in Artifacts tab (as allure-report.zip)"
