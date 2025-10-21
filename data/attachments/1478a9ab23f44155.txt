@@ -1,0 +1,4 @@
+INFO     api_testing:base_client.py:17 --- START REQUEST ---
+INFO     api_testing:base_client.py:18 Method: GET | URL: https://jsonplaceholder.typicode.com//posts
+INFO     api_testing:base_client.py:30 Status: 200 | Time: 0.048s
+INFO     api_testing:base_client.py:38 --- END REQUEST ---

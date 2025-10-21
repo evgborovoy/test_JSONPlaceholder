@@ -1,0 +1,5 @@
+INFO     api_testing:base_client.py:17 --- START REQUEST ---
+INFO     api_testing:base_client.py:18 Method: POST | URL: https://jsonplaceholder.typicode.com//posts
+INFO     api_testing:base_client.py:30 Status: 201 | Time: 0.061s
+INFO     api_testing:base_client.py:38 --- END REQUEST ---
+WARNING  api_testing:test_posts.py:156 JSONPlaceholder bug: Returned 201 (Created) for missing data.
